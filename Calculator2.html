@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balance Familiar Inteligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #4f46e5 0%, #10b981 100%);
+        }
+        .chart-container {
+            height: 300px;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .priority-high {
+            border-left: 4px solid #ef4444;
+        }
+        .priority-medium {
+            border-left: 4px solid #f59e0b;
+        }
+        .priority-low {
+            border-left: 4px solid #10b981;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="gradient-bg text-white py-6 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold"><i class="fas fa-piggy-bank mr-2"></i> Balance Familiar</h1>
+                <button id="toggleHelp" class="bg-white text-indigo-600 px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition">
+                    <i class="fas fa-question-circle mr-1"></i> Ayuda
+                </button>
+            </div>
+            <p class="mt-2 opacity-90">Controla tus finanzas familiares y optimiza tu ahorro</p>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Sección de ingresos y gastos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Ingresos -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4 text-green-600"><i class="fas fa-wallet mr-2"></i> Ingresos Familiares</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <input type="text" id="incomeSource" placeholder="Fuente de ingreso" class="flex-1 border rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <input type="number" id="incomeAmount" placeholder="Monto" class="w-32 border-t border-b border-r px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <button id="addIncome" class="bg-green-600 text-white px-4 py-2 rounded-r-lg hover:bg-green-700 transition">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div id="incomeList" class="max-h-60 overflow-y-auto border rounded-lg">
+                        <!-- Aquí se agregarán los ingresos dinámicamente -->
+                    </div>
+                    <div class="flex justify-between items-center bg-green-50 p-3 rounded-lg">
+                        <span class="font-semibold">Total Ingresos:</span>
+                        <span id="totalIncome" class="text-green-600 font-bold text-lg">$0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gastos -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4 text-red-600"><i class="fas fa-shopping-cart mr-2"></i> Gastos Familiares</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <input type="text" id="expenseName" placeholder="Nombre del gasto" class="flex-1 border rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <input type="number" id="expenseAmount" placeholder="Monto" class="w-32 border-t border-b border-r px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <select id="expensePriority" class="border-t border-b border-r px-2 py-2 focus:outline-none">
+                            <option value="high">Alta</option>
+                            <option value="medium" selected>Media</option>
+                            <option value="low">Baja</option>
+                        </select>
+                        <button id="addExpense" class="bg-red-600 text-white px-4 py-2 rounded-r-lg hover:bg-red-700 transition">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div id="expenseList" class="max-h-60 overflow-y-auto border rounded-lg">
+                        <!-- Aquí se agregarán los gastos dinámicamente -->
+                    </div>
+                    <div class="flex justify-between items-center bg-red-50 p-3 rounded-lg">
+                        <span class="font-semibold">Total Gastos:</span>
+                        <span id="totalExpense" class="text-red-600 font-bold text-lg">$0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen y gráficos -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-indigo-600"><i class="fas fa-chart-pie mr-2"></i> Resumen Financiero</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-indigo-50 p-4 rounded-lg text-center">
+                    <p class="text-indigo-800">Ingresos Totales</p>
+                    <p id="summaryIncome" class="text-2xl font-bold text-indigo-600">$0</p>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg text-center">
+                    <p class="text-purple-800">Gastos Totales</p>
+                    <p id="summaryExpense" class="text-2xl font-bold text-purple-600">$0</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg text-center">
+                    <p class="text-green-800">Balance Final</p>
+                    <p id="summaryBalance" class="text-2xl font-bold text-green-600">$0</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="chart-container">
+                    <canvas id="incomeChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="expenseChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recomendaciones -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Plan de ahorro -->
+            <div id="savingsPlan" class="bg-white p-6 rounded-lg shadow-md fade-in hidden">
+                <h2 class="text-xl font-semibold mb-4 text-blue-600"><i class="fas fa-lightbulb mr-2"></i> Plan de Ahorro</h2>
+                <div id="savingsContent">
+                    <!-- Contenido dinámico -->
+                </div>
+            </div>
+
+            <!-- Reducción de gastos -->
+            <div id="expenseReduction" class="bg-white p-6 rounded-lg shadow-md fade-in hidden">
+                <h2 class="text-xl font-semibold mb-4 text-orange-600"><i class="fas fa-cut mr-2"></i> Reducción de Gastos</h2>
+                <div id="reductionContent">
+                    <!-- Contenido dinámico -->
+                </div>
+            </div>
+
+            <!-- Aumento de ingresos -->
+            <div id="incomeIncrease" class="bg-white p-6 rounded-lg shadow-md fade-in hidden">
+                <h2 class="text-xl font-semibold mb-4 text-teal-600"><i class="fas fa-chart-line mr-2"></i> Aumentar Ingresos</h2>
+                <div id="incomeContent">
+                    <!-- Contenido dinámico -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Perfil del usuario -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-purple-600"><i class="fas fa-user-tie mr-2"></i> Perfil Laboral</h2>
+            <p class="mb-4">Completa esta información para recibir recomendaciones personalizadas:</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Profesión/Oficio</label>
+                    <input type="text" id="userProfession" class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Ej: Contador, Programador, Enfermero">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Habilidades principales</label>
+                    <input type="text" id="userSkills" class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Ej: Inglés, Excel, Diseño">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Horas disponibles semanales para ingresos extras</label>
+                    <select id="userExtraHours" class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="0">No disponibles</option>
+                        <option value="5">1-5 horas</option>
+                        <option value="10">5-10 horas</option>
+                        <option value="15">10-15 horas</option>
+                        <option value="20">15-20 horas</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button id="saveProfile" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+                        <i class="fas fa-save mr-1"></i> Guardar Perfil
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de ayuda -->
+    <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-indigo-600"><i class="fas fa-question-circle mr-2"></i> Cómo usar esta herramienta</h3>
+                <button id="closeHelp" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <h4 class="font-semibold text-lg text-green-600"><i class="fas fa-wallet mr-2"></i> Registro de Ingresos</h4>
+                    <p class="text-gray-700">Agrega todas las fuentes de ingresos familiares: salarios, negocios, inversiones, etc. Es importante registrar montos exactos para un análisis preciso.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-red-600"><i class="fas fa-shopping-cart mr-2"></i> Registro de Gastos</h4>
+                    <p class="text-gray-700">Clasifica cada gasto por prioridad (alta, media, baja) para identificar fácilmente cuáles son esenciales y cuáles podrían reducirse.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-blue-600"><i class="fas fa-lightbulb mr-2"></i> Recomendaciones</h4>
+                    <p class="text-gray-700">Basado en tus ingresos y gastos, la herramienta generará automáticamente un plan de ahorro, sugerencias para reducir gastos y formas de aumentar tus ingresos.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-purple-600"><i class="fas fa-user-tie mr-2"></i> Perfil Laboral</h4>
+                    <p class="text-gray-700">Completa tu perfil con tu profesión y habilidades para recibir recomendaciones personalizadas sobre cómo aumentar tus ingresos según tus capacidades.</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-lg text-blue-800"><i class="fas fa-info-circle mr-2"></i> Consejo</h4>
+                    <p class="text-blue-800">Revisa y actualiza tus finanzas al menos una vez al mes para mantener un control efectivo de tu economía familiar.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Variables globales
+        let incomes = [];
+        let expenses = [];
+        let userProfile = {
+            profession: '',
+            skills: '',
+            extraHours: 0
+        };
+        let incomeChart, expenseChart;
+
+        // DOM Elements
+        const incomeSource = document.getElementById('incomeSource');
+        const incomeAmount = document.getElementById('incomeAmount');
+        const addIncome = document.getElementById('addIncome');
+        const incomeList = document.getElementById('incomeList');
+        const totalIncome = document.getElementById('totalIncome');
+        
+        const expenseName = document.getElementById('expenseName');
+        const expenseAmount = document.getElementById('expenseAmount');
+        const expensePriority = document.getElementById('expensePriority');
+        const addExpense = document.getElementById('addExpense');
+        const expenseList = document.getElementById('expenseList');
+        const totalExpense = document.getElementById('totalExpense');
+        
+        const summaryIncome = document.getElementById('summaryIncome');
+        const summaryExpense = document.getElementById('summaryExpense');
+        const summaryBalance = document.getElementById('summaryBalance');
+        
+        const savingsPlan = document.getElementById('savingsPlan');
+        const savingsContent = document.getElementById('savingsContent');
+        const expenseReduction = document.getElementById('expenseReduction');
+        const reductionContent = document.getElementById('reductionContent');
+        const incomeIncrease = document.getElementById('incomeIncrease');
+        const incomeContent = document.getElementById('incomeContent');
+        
+        const userProfession = document.getElementById('userProfession');
+        const userSkills = document.getElementById('userSkills');
+        const userExtraHours = document.getElementById('userExtraHours');
+        const saveProfile = document.getElementById('saveProfile');
+        
+        const toggleHelp = document.getElementById('toggleHelp');
+        const helpModal = document.getElementById('helpModal');
+        const closeHelp = document.getElementById('closeHelp');
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cargar datos guardados si existen
+            loadData();
+            updateSummary();
+            renderLists();
+            updateCharts();
+            generateRecommendations();
+            
+            // Configurar tooltips
+            setupTooltips();
+        });
+
+        addIncome.addEventListener('click', addNewIncome);
+        addExpense.addEventListener('click', addNewExpense);
+        saveProfile.addEventListener('click', saveUserProfile);
+        toggleHelp.addEventListener('click', () => helpModal.classList.remove('hidden'));
+        closeHelp.addEventListener('click', () => helpModal.classList.add('hidden'));
+
+        // Funciones
+        function setupTooltips() {
+            // Agregar tooltips a los iconos
+            const tooltipElements = document.querySelectorAll('[data-tooltip]');
+            tooltipElements.forEach(el => {
+                el.addEventListener('mouseenter', showTooltip);
+                el.addEventListener('mouseleave', hideTooltip);
+            });
+        }
+
+        function showTooltip(e) {
+            const tooltipText = this.getAttribute('data-tooltip');
+            const tooltip = document.createElement('div');
+            tooltip.className = 'absolute bg-gray-800 text-white text-xs rounded px-2 py-1 -mt-8';
+            tooltip.textContent = tooltipText;
+            this.appendChild(tooltip);
+        }
+
+        function hideTooltip() {
+            const tooltip = this.querySelector('div');
+            if (tooltip) this.removeChild(tooltip);
+        }
+
+        function addNewIncome() {
+            const source = incomeSource.value.trim();
+            const amount = parseFloat(incomeAmount.value);
+            
+            if (!source || isNaN(amount) || amount <= 0) {
+                alert('Por favor ingresa una fuente de ingreso válida y un monto positivo');
+                return;
+            }
+            
+            const income = {
+                id: Date.now(),
+                source,
+                amount,
+                date: new Date().toLocaleDateString()
+            };
+            
+            incomes.push(income);
+            saveData();
+            renderLists();
+            updateSummary();
+            updateCharts();
+            generateRecommendations();
+            
+            // Limpiar campos
+            incomeSource.value = '';
+            incomeAmount.value = '';
+            incomeSource.focus();
+        }
+
+        function addNewExpense() {
+            const name = expenseName.value.trim();
+            const amount = parseFloat(expenseAmount.value);
+            const priority = expensePriority.value;
+            
+            if (!name || isNaN(amount) || amount <= 0) {
+                alert('Por favor ingresa un nombre de gasto válido y un monto positivo');
+                return;
+            }
+            
+            const expense = {
+                id: Date.now(),
+                name,
+                amount,
+                priority,
+                date: new Date().toLocaleDateString()
+            };
+            
+            expenses.push(expense);
+            saveData();
+            renderLists();
+            updateSummary();
+            updateCharts();
+            generateRecommendations();
+            
+            // Limpiar campos
+            expenseName.value = '';
+            expenseAmount.value = '';
+            expenseName.focus();
+        }
+
+        function renderLists() {
+            // Renderizar ingresos
+            incomeList.innerHTML = '';
+            if (incomes.length === 0) {
+                incomeList.innerHTML = '<p class="text-center py-4 text-gray-500">No hay ingresos registrados</p>';
+            } else {
+                incomes.forEach(income => {
+                    const incomeElement = document.createElement('div');
+                    incomeElement.className = 'flex justify-between items-center p-3 border-b hover:bg-gray-50';
+                    incomeElement.innerHTML = `
+                        <div>
+                            <span class="font-medium">${income.source}</span>
+                            <span class="text-xs text-gray-500 block">${income.date}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-green-600 font-semibold mr-4">$${income.amount.toFixed(2)}</span>
+                            <button data-id="${income.id}" class="text-red-500 hover:text-red-700 delete-income" data-tooltip="Eliminar ingreso">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    `;
+                    incomeList.appendChild(incomeElement);
+                });
+                
+                // Agregar event listeners a los botones de eliminar
+                document.querySelectorAll('.delete-income').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        incomes = incomes.filter(income => income.id !== id);
+                        saveData();
+                        renderLists();
+                        updateSummary();
+                        updateCharts();
+                        generateRecommendations();
+                    });
+                });
+            }
+            
+            // Renderizar gastos
+            expenseList.innerHTML = '';
+            if (expenses.length === 0) {
+                expenseList.innerHTML = '<p class="text-center py-4 text-gray-500">No hay gastos registrados</p>';
+            } else {
+                expenses.forEach(expense => {
+                    const priorityClass = `priority-${expense.priority}`;
+                    const priorityText = expense.priority === 'high' ? 'Alta' : expense.priority === 'medium' ? 'Media' : 'Baja';
+                    const priorityColor = expense.priority === 'high' ? 'text-red-500' : expense.priority === 'medium' ? 'text-yellow-500' : 'text-green-500';
+                    
+                    const expenseElement = document.createElement('div');
+                    expenseElement.className = `flex justify-between items-center p-3 border-b hover:bg-gray-50 ${priorityClass}`;
+                    expenseElement.innerHTML = `
+                        <div>
+                            <span class="font-medium">${expense.name}</span>
+                            <span class="text-xs text-gray-500 block">${expense.date} - Prioridad: <span class="${priorityColor}">${priorityText}</span></span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-red-600 font-semibold mr-4">$${expense.amount.toFixed(2)}</span>
+                            <button data-id="${expense.id}" class="text-red-500 hover:text-red-700 delete-expense" data-tooltip="Eliminar gasto">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    `;
+                    expenseList.appendChild(expenseElement);
+                });
+                
+                // Agregar event listeners a los botones de eliminar
+                document.querySelectorAll('.delete-expense').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        expenses = expenses.filter(expense => expense.id !== id);
+                        saveData();
+                        renderLists();
+                        updateSummary();
+                        updateCharts();
+                        generateRecommendations();
+                    });
+                });
+            }
+        }
+
+        function updateSummary() {
+            const totalIncomes = incomes.reduce((sum, income) => sum + income.amount, 0);
+            const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const balance = totalIncomes - totalExpenses;
+            
+            totalIncome.textContent = `$${totalIncomes.toFixed(2)}`;
+            totalExpense.textContent = `$${totalExpenses.toFixed(2)}`;
+            
+            summaryIncome.textContent = `$${totalIncomes.toFixed(2)}`;
+            summaryExpense.textContent = `$${totalExpenses.toFixed(2)}`;
+            
+            if (balance >= 0) {
+                summaryBalance.textContent = `$${balance.toFixed(2)}`;
+                summaryBalance.className = 'text-2xl font-bold text-green-600';
+            } else {
+                summaryBalance.textContent = `-$${Math.abs(balance).toFixed(2)}`;
+                summaryBalance.className = 'text-2xl font-bold text-red-600';
+            }
+        }
+
+        function updateCharts() {
+            const ctxIncome = document.getElementById('incomeChart').getContext('2d');
+            const ctxExpense = document.getElementById('expenseChart').getContext('2d');
+            
+            // Destruir gráficos anteriores si existen
+            if (incomeChart) incomeChart.destroy();
+            if (expenseChart) expenseChart.destroy();
+            
+            // Datos para gráfico de ingresos
+            const incomeSources = incomes.map(income => income.source);
+            const incomeAmounts = incomes.map(income => income.amount);
+            
+            // Datos para gráfico de gastos por categoría
+            const expenseCategories = {};
+            expenses.forEach(expense => {
+                if (!expenseCategories[expense.priority]) {
+                    expenseCategories[expense.priority] = 0;
+                }
+                expenseCategories[expense.priority] += expense.amount;
+            });
+            
+            const expenseLabels = ['Alta', 'Media', 'Baja'];
+            const expenseData = [
+                expenseCategories['high'] || 0,
+                expenseCategories['medium'] || 0,
+                expenseCategories['low'] || 0
+            ];
+            
+            // Colores para gráficos
+            const incomeColors = generateColors(incomeSources.length, 0.7);
+            const expenseColors = ['#ef4444', '#f59e0b', '#10b981'];
+            
+            // Crear gráfico de ingresos
+            incomeChart = new Chart(ctxIncome, {
+                type: 'pie',
+                data: {
+                    labels: incomeSources,
+                    datasets: [{
+                        data: incomeAmounts,
+                        backgroundColor: incomeColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Distribución de Ingresos',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Crear gráfico de gastos
+            expenseChart = new Chart(ctxExpense, {
+                type: 'doughnut',
+                data: {
+                    labels: expenseLabels,
+                    datasets: [{
+                        data: expenseData,
+                        backgroundColor: expenseColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Gastos por Prioridad',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateColors(count, opacity = 1) {
+            const colors = [];
+            const hueStep = 360 / count;
+            
+            for (let i = 0; i < count; i++) {
+                const hue = i * hueStep;
+                colors.push(`hsla(${hue}, 70%, 60%, ${opacity})`);
+            }
+            
+            return colors;
+        }
+
+        function generateRecommendations() {
+            const totalIncomes = incomes.reduce((sum, income) => sum + income.amount, 0);
+            const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const balance = totalIncomes - totalExpenses;
+            
+            // Mostrar secciones de recomendaciones
+            savingsPlan.classList.remove('hidden');
+            expenseReduction.classList.remove('hidden');
+            incomeIncrease.classList.remove('hidden');
+            
+            // Generar plan de ahorro
+            let savingsHTML = '';
+            if (balance > 0) {
+                const savingsPercentage = Math.min(30, Math.max(10, Math.floor((balance / totalIncomes) * 100)));
+                const suggestedSavings = (totalIncomes * savingsPercentage / 100).toFixed(2);
+                
+                savingsHTML = `
+                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                        <h3 class="font-semibold text-blue-800 mb-2"><i class="fas fa-coins mr-2"></i> ¡Tienes capacidad de ahorro!</h3>
+                        <p class="text-blue-800">Basado en tus ingresos y gastos, te recomendamos ahorrar el ${savingsPercentage}% de tus ingresos, lo que equivale a <span class="font-bold">$${suggestedSavings} mensuales</span>.</p>
+                    </div>
+                    <div class="space-y-3">
+                        <h4 class="font-semibold text-gray-700"><i class="fas fa-list-check mr-2"></i> Plan de acción:</h4>
+                        <div class="flex items-start">
+                            <span class="bg-blue-100 text-blue-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-check text-xs"></i></span>
+                            <span>Abre una cuenta de ahorros separada y programa transferencias automáticas por $${(suggestedSavings / 4).toFixed(2)} cada semana.</span>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="bg-blue-100 text-blue-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-check text-xs"></i></span>
+                            <span>Considera instrumentos de inversión conservadores como fondos mutuos o CETES para tu ahorro.</span>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="bg-blue-100 text-blue-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-check text-xs"></i></span>
+                            <span>Establece metas de ahorro específicas (ej: vacaciones, emergencias, educación) para mantener la motivación.</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                savingsHTML = `
+                    <div class="bg-red-50 p-4 rounded-lg mb-4">
+                        <h3 class="font-semibold text-red-800 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i> Alerta: Gastos mayores a ingresos</h3>
+                        <p class="text-red-800">Tus gastos exceden tus ingresos por <span class="font-bold">$${Math.abs(balance).toFixed(2)}</span>. Revisa urgentemente tus gastos y considera formas de aumentar tus ingresos.</p>
+                    </div>
+                    <div class="space-y-3">
+                        <h4 class="font-semibold text-gray-700"><i class="fas fa-list-check mr-2"></i> Acciones inmediatas:</h4>
+                        <div class="flex items-start">
+                            <span class="bg-red-100 text-red-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-check text-xs"></i></span>
+                            <span>Identifica y elimina gastos no esenciales marcados como prioridad baja o media.</span>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="bg-red-100 text-red-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-check text-xs"></i></span>
+                            <span>Considera consolidar deudas o refinanciar créditos para reducir pagos mensuales.</span>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="bg-red-100 text-red-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-check text-xs"></i></span>
+                            <span>Busca fuentes alternativas de ingresos aunque sean temporales hasta equilibrar tu situación.</span>
+                        </div>
+                    </div>
+                `;
+            }
+            savingsContent.innerHTML = savingsHTML;
+            
+            // Generar recomendaciones para reducir gastos
+            let reductionHTML = '';
+            const lowPriorityExpenses = expenses.filter(e => e.priority === 'low');
+            const mediumPriorityExpenses = expenses.filter(e => e.priority === 'medium');
+            
+            if (lowPriorityExpenses.length > 0 || mediumPriorityExpenses.length > 0) {
+                reductionHTML = '<div class="space-y-4">';
+                
+                if (lowPriorityExpenses.length > 0) {
+                    const totalLow = lowPriorityExpenses.reduce((sum, e) => sum + e.amount, 0);
+                    reductionHTML += `
+                        <div>
+                            <h4 class="font-semibold text-green-700"><i class="fas fa-leaf mr-2"></i> Gastos de baja prioridad ($${totalLow.toFixed(2)})</h4>
+                            <p class="text-sm text-gray-600 mb-2">Estos gastos podrían reducirse o eliminarse sin afectar significativamente tu calidad de vida:</p>
+                            <ul class="list-disc pl-5 space-y-1">
+                                ${lowPriorityExpenses.map(e => `<li>${e.name}: <span class="font-medium">$${e.amount.toFixed(2)}</span></li>`).join('')}
+                            </ul>
+                            <div class="mt-2 bg-green-50 p-3 rounded-lg">
+                                <p class="text-sm text-green-800"><i class="fas fa-lightbulb mr-1"></i> Reduciendo estos gastos a la mitad podrías ahorrar <span class="font-bold">$${(totalLow / 2).toFixed(2)} mensuales</span>.</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (mediumPriorityExpenses.length > 0) {
+                    const totalMedium = mediumPriorityExpenses.reduce((sum, e) => sum + e.amount, 0);
+                    reductionHTML += `
+                        <div>
+                            <h4 class="font-semibold text-yellow-700"><i class="fas fa-balance-scale mr-2"></i> Gastos de media prioridad ($${totalMedium.toFixed(2)})</h4>
+                            <p class="text-sm text-gray-600 mb-2">Estos gastos podrían optimizarse buscando alternativas más económicas:</p>
+                            <ul class="list-disc pl-5 space-y-1">
+                                ${mediumPriorityExpenses.map(e => `<li>${e.name}: <span class="font-medium">$${e.amount.toFixed(2)}</span></li>`).join('')}
+                            </ul>
+                            <div class="mt-2 bg-yellow-50 p-3 rounded-lg">
+                                <p class="text-sm text-yellow-800"><i class="fas fa-lightbulb mr-1"></i> Buscando proveedores alternativos o negociando descuentos podrías ahorrar hasta un 20% (<span class="font-bold">$${(totalMedium * 0.2).toFixed(2)}</span>).</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Consejos generales
+                reductionHTML += `
+                    <div class="bg-orange-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-orange-800"><i class="fas fa-tools mr-2"></i> Estrategias para reducir gastos</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                            <div class="flex items-start">
+                                <span class="bg-orange-100 text-orange-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-bolt text-xs"></i></span>
+                                <span class="text-sm">Realiza compras al por mayor en productos no perecederos para obtener mejores precios.</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="bg-orange-100 text-orange-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-bolt text-xs"></i></span>
+                                <span class="text-sm">Compara precios en al menos 3 lugares antes de compras importantes.</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="bg-orange-100 text-orange-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-bolt text-xs"></i></span>
+                                <span class="text-sm">Considera opciones de segunda mano para ciertos artículos.</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="bg-orange-100 text-orange-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-bolt text-xs"></i></span>
+                                <span class="text-sm">Revisa membresías y suscripciones que no uses frecuentemente.</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                reductionHTML += '</div>';
+            } else {
+                reductionHTML = `
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-green-800 mb-2"><i class="fas fa-check-circle mr-2"></i> ¡Buen trabajo con tus gastos!</h4>
+                        <p class="text-green-800">No tienes gastos identificados como de baja o media prioridad. Esto significa que estás enfocando bien tus recursos en lo esencial.</p>
+                    </div>
+                    <div class="mt-4 bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-blue-800 mb-2"><i class="fas fa-lightbulb mr-2"></i> Consejo para mantenerte</h4>
+                        <p class="text-blue-800">Revisa periódicamente tus gastos para asegurarte que siguen alineados con tus prioridades y metas financieras.</p>
+                    </div>
+                `;
+            }
+            reductionContent.innerHTML = reductionHTML;
+            
+            // Generar recomendaciones para aumentar ingresos
+            let incomeHTML = '';
+            const hasProfile = userProfile.profession || userProfile.skills;
+            
+            if (hasProfile) {
+                incomeHTML = `
+                    <div class="bg-teal-50 p-4 rounded-lg mb-4">
+                        <h3 class="font-semibold text-teal-800 mb-2"><i class="fas fa-user-tie mr-2"></i> Recomendaciones personalizadas</h3>
+                        <p class="text-teal-800">Basado en tu perfil como <span class="font-medium">${userProfile.profession || 'profesional'}</span> con habilidades en <span class="font-medium">${userProfile.skills || 'diversas áreas'}</span>, estas son algunas formas de aumentar tus ingresos:</p>
+                    </div>
+                    <div class="space-y-4">
+                `;
+                
+                // Recomendaciones basadas en profesión
+                if (userProfile.profession.toLowerCase().includes('cont') || userProfile.skills.toLowerCase().includes('contabilidad')) {
+                    incomeHTML += `
+                        <div>
+                            <h4 class="font-semibold text-gray-700"><i class="fas fa-calculator mr-2"></i> Para contadores:</h4>
+                            <ul class="list-disc pl-5 space-y-1 mt-1">
+                                <li>Ofrece servicios de declaración de impuestos a pequeños negocios en temporada fiscal.</li>
+                                <li>Brinda asesorías financieras básicas a emprendedores ($$50-100/hora).</li>
+                                <li>Crea contenido educativo sobre finanzas personales en plataformas digitales.</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                if (userProfile.profession.toLowerCase().includes('progr') || userProfile.skills.toLowerCase().includes('programación')) {
+                    incomeHTML += `
+                        <div>
+                            <h4 class="font-semibold text-gray-700"><i class="fas fa-code mr-2"></i> Para programadores:</h4>
+                            <ul class="list-disc pl-5 space-y-1 mt-1">
+                                <li>Desarrolla plugins o temas para plataformas como WordPress (ingresos pasivos).</li>
+                                <li>Participa en plataformas de freelancing como Upwork o Fiverr.</li>
+                                <li>Enseña programación básica a niños o adultos mayores ($$40-80/hora).</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                if (userProfile.profession.toLowerCase().includes('diseñ') || userProfile.skills.toLowerCase().includes('diseño')) {
+                    incomeHTML += `
+                        <div>
+                            <h4 class="font-semibold text-gray-700"><i class="fas fa-paint-brush mr-2"></i> Para diseñadores:</h4>
+                            <ul class="list-disc pl-5 space-y-1 mt-1">
+                                <li>Crea plantillas para Canva o Adobe Stock y gana regalías.</li>
+                                <li>Ofrece servicios de branding rápido para pequeños negocios.</li>
+                                <li>Diseña camisetas y productos para imprimir en demanda (Printful, Redbubble).</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                // Recomendaciones generales basadas en habilidades
+                if (userProfile.skills.toLowerCase().includes('inglés')) {
+                    incomeHTML += `
+                        <div>
+                            <h4 class="font-semibold text-gray-700"><i class="fas fa-language mr-2"></i> Aprovecha tu inglés:</h4>
+                            <ul class="list-disc pl-5 space-y-1 mt-1">
+                                <li>Trabaja como tutor de inglés en línea ($$15-30/hora).</li>
+                                <li>Ofrece servicios de traducción o revisión de textos.</li>
+                                <li>Crea subtítulos para videos o películas.</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                if (userProfile.skills.toLowerCase().includes('excel')) {
+                    incomeHTML += `
+                        <div>
+                            <h4 class="font-semibold text-gray-700"><i class="fas fa-file-excel mr-2"></i> Aprovecha tu Excel:</h4>
+                            <ul class="list-disc pl-5 space-y-1 mt-1">
+                                <li>Automatiza procesos para pequeñas empresas ($$200-500 por proyecto).</li>
+                                <li>Enseña Excel básico/avanzado a profesionales.</li>
+                                <li>Crea plantillas personalizadas para negocios específicos.</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                incomeHTML += `
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-purple-800"><i class="fas fa-rocket mr-2"></i> Ideas generales para aumentar ingresos</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                                <div class="flex items-start">
+                                    <span class="bg-purple-100 text-purple-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-bolt text-xs"></i></span>
+                                    <span class="text-sm">Vende productos digitales (guías, plantillas) en Etsy o Gumroad.</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="bg-purple-100 text-purple-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-bolt text-xs"></i></span>
+                                    <span class="text-sm">Participa en estudios de mercado o focus groups remunerados.</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="bg-purple-100 text-purple-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-bolt text-xs"></i></span>
+                                    <span class="text-sm">Renta espacio no utilizado (parqueo, almacén, habitación).</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="bg-purple-100 text-purple-800 rounded-full p-1 mr-2 mt-1"><i class="fas fa-bolt text-xs"></i></span>
+                                    <span class="text-sm">Monetiza un hobby (artesanías, repostería, fotografía).</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                incomeHTML = `
+                    <div class="bg-yellow-50 p-4 rounded-lg mb-4">
+                        <h3 class="font-semibold text-yellow-800 mb-2"><i class="fas fa-exclamation-circle mr-2"></i> Completa tu perfil laboral</h3>
+                        <p class="text-yellow-800">Para recibir recomendaciones personalizadas sobre cómo aumentar tus ingresos, completa la sección de "Perfil Laboral" más abajo.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-700"><i class="fas fa-lightbulb mr-2"></i> Ideas generales para aumentar ingresos:</h4>
+                            <ul class="list-disc pl-5 space-y-1 mt-1">
+                                <li>Busca trabajos freelance en plataformas como Upwork o Fiverr.</li>
+                                <li>Vende productos usados que ya no necesites en Marketplace o MercadoLibre.</li>
+                                <li>Ofrece servicios locales (tutorías, cuidado de mascotas, jardinería).</li>
+                                <li>Participa en la economía gig (Uber, Rappi, Didi).</li>
+                            </ul>
+                        </div>
+                        <div class="bg-teal-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-teal-800"><i class="fas fa-chart-line mr-2"></i> Potencial de ingresos extras</h4>
+                            <p class="text-teal-800 mt-2">Según las horas que tengas disponibles:</p>
+                            <div class="mt-2 space-y-2">
+                                <div class="flex items-center">
+                                    <span class="w-32 font-medium">5-10 hrs/semana:</span>
+                                    <span class="text-teal-700">$$200-400/mes adicionales</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-32 font-medium">10-15 hrs/semana:</span>
+                                    <span class="text-teal-700">$$400-800/mes adicionales</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-32 font-medium">15-20 hrs/semana:</span>
+                                    <span class="text-teal-700">$$800-1,500/mes adicionales</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            incomeContent.innerHTML = incomeHTML;
+        }
+
+        function saveUserProfile() {
+            userProfile = {
+                profession: userProfession.value.trim(),
+                skills: userSkills.value.trim(),
+                extraHours: parseInt(userExtraHours.value)
+            };
+            
+            saveData();
+            generateRecommendations();
+            
+            // Mostrar notificación
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center';
+            notification.innerHTML = `
+                <i class="fas fa-check-circle mr-2"></i> Perfil guardado correctamente
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+
+        function saveData() {
+            const data = {
+                incomes,
+                expenses,
+                userProfile
+            };
+            localStorage.setItem('familyFinanceData', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('familyFinanceData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                incomes = data.incomes || [];
+                expenses = data.expenses || [];
+                userProfile = data.userProfile || {
+                    profession: '',
+                    skills: '',
+                    extraHours: 0
+                };
+                
+                // Actualizar campos del perfil
+                userProfession.value = userProfile.profession;
+                userSkills.value = userProfile.skills;
+                userExtraHours.value = userProfile.extraHours;
+            }
+        }
+    </script>
+</body>
+</html>
